@@ -1,4 +1,4 @@
-package ru.nb.saga.orders.config
+package ru.nb.saga.inventory.config
 
 import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -18,8 +18,8 @@ import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor
 import org.springframework.stereotype.Service
 import ru.nb.saga.common.Log
-import ru.nb.saga.common.OrderEvent
-import ru.nb.saga.orders.controller.ReverseOrder
+import ru.nb.saga.common.PaymentEvent
+import ru.nb.saga.inventory.controller.InventoryController
 
 @Configuration
 class ConsumerConfig(
@@ -30,7 +30,7 @@ class ConsumerConfig(
 ) {
 
 	@Bean
-	fun consumerFactory(): ConsumerFactory<String, OrderEvent> {
+	fun consumerFactory(): ConsumerFactory<String, PaymentEvent> {
 		val props = mutableMapOf<String, Any>()
 		props[ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG] = bootstrapServers
 		props[ConsumerConfig.CLIENT_ID_CONFIG] = consumerClientId
@@ -39,7 +39,7 @@ class ConsumerConfig(
 
 		props[ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG] = StringDeserializer::class.java
 		props[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = JsonDeserializer::class.java
-		props[TYPE_MAPPINGS] = "ru.nb.saga.common.OrderEvent:ru.nb.saga.common.OrderEvent"
+		props[TYPE_MAPPINGS] = "ru.nb.saga.common.PaymentEvent:ru.nb.saga.common.PaymentEvent"
 
 		/*	// Размер пакета сообщений, прочитанного за раз
 			props[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 3
@@ -53,12 +53,12 @@ class ConsumerConfig(
 
 	@Bean(KAFKA_LISTENER_CONTAINER_FACTORY)
 	fun listenerContainerFactory(
-		consumerFactory: ConsumerFactory<String, OrderEvent>
-	): ConcurrentKafkaListenerContainerFactory<String, OrderEvent> {
+		consumerFactory: ConsumerFactory<String, PaymentEvent>
+	): ConcurrentKafkaListenerContainerFactory<String, PaymentEvent> {
 		val executor = SimpleAsyncTaskExecutor("consumer-")
 		executor.concurrencyLimit = 10
 		val listenerTaskExecutor = ConcurrentTaskExecutor(executor)
-		val factory = ConcurrentKafkaListenerContainerFactory<String, OrderEvent>().also {
+		val factory = ConcurrentKafkaListenerContainerFactory<String, PaymentEvent>().also {
 			it.consumerFactory = consumerFactory
 			it.isBatchListener = false
 			it.setConcurrency(1)
@@ -80,16 +80,16 @@ class ConsumerConfig(
 
 @Service
 class ConsumerKafka(
-	private val reverseOrder: ReverseOrder
+	private val inventoryController: InventoryController
 ) {
 
 	@KafkaListener(
 		topics = ["\${kafka.consumer.topic}"],
 		containerFactory = KAFKA_LISTENER_CONTAINER_FACTORY,
 	)
-//	fun listen(@Payload values: List<OrderEvent>) {
-	fun listen(@Payload value: OrderEvent) {
-		reverseOrder.accept(value)
+//	fun listen(@Payload values: List<PaymentEvent>) {
+	fun listen(@Payload value: PaymentEvent) {
+		inventoryController.accept(value)
 	}
 
 	companion object : Log()

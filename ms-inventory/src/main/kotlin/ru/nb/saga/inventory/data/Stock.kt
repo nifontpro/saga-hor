@@ -1,4 +1,4 @@
-package ru.nb.saga.inventory
+package ru.nb.saga.inventory.data
 
 data class Stock (
 	var item: String,

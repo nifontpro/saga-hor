@@ -1,30 +1,25 @@
-package ru.nb.saga.inventory
+package ru.nb.saga.inventory.controller
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import org.springframework.kafka.annotation.KafkaListener
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import ru.nb.saga.common.InventoryEvent
+import ru.nb.saga.common.BaseConsumer
 import ru.nb.saga.common.PaymentEvent
+import ru.nb.saga.inventory.data.Inventory
+import ru.nb.saga.inventory.data.InventoryRepository
+import ru.nb.saga.inventory.data.Stock
 
 @RestController
 class InventoryController(
 	private val repository: InventoryRepository,
-	private val kafkaTemplate: KafkaTemplate<String, InventoryEvent>,
-	private val kafkaPaymentTemplate: KafkaTemplate<String, PaymentEvent>
-) {
+	private val kafkaPaymentTemplate: KafkaTemplate<String, PaymentEvent>,
+	@Value("\${kafka.producer.reverse.topic}") val producerReverseTopicName: String,
+) : BaseConsumer<PaymentEvent> {
 
-	@KafkaListener(topics = ["new-payments"], groupId = "payments-group")
-	fun updateInventory(paymentEvent: String) {
-		val p = ObjectMapper().readValue(paymentEvent, PaymentEvent::class.java)
-		val order = p.order
-
-		val event = InventoryEvent(
-			type = "INVENTORY_UPDATED",
-			order = order
-		)
+	override fun accept(value: PaymentEvent) {
+		val order = value.order
 		try {
 			// update stock in database
 			val inventories = repository.findByItem(order.item)
@@ -35,8 +30,6 @@ class InventoryController(
 				i.quantity -= order.quantity
 				repository.save(i)
 			}
-
-			kafkaTemplate.send("new-inventory", event)
 		} catch (e: Exception) {
 			// reverse previous task
 
@@ -44,7 +37,7 @@ class InventoryController(
 				order = order,
 				type = "PAYMENT_REVERSED"
 			)
-			kafkaPaymentTemplate.send("reversed-payments", pe)
+			kafkaPaymentTemplate.send(producerReverseTopicName, pe)
 		}
 	}
 

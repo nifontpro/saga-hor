@@ -1,4 +1,4 @@
-package ru.nb.saga.orders
+package ru.nb.saga.orders.data
 
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue

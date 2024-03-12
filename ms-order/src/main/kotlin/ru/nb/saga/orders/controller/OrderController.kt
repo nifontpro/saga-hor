@@ -1,5 +1,6 @@
-package ru.nb.saga.orders
+package ru.nb.saga.orders.controller
 
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -7,11 +8,14 @@ import org.springframework.web.bind.annotation.RestController
 import ru.nb.saga.common.CustomerOrder
 import ru.nb.saga.common.Log
 import ru.nb.saga.common.OrderEvent
+import ru.nb.saga.orders.data.OrderEntity
+import ru.nb.saga.orders.data.OrderRepository
 
 @RestController
 class OrderController(
 	private val repository: OrderRepository,
-	private val kafkaTemplate: KafkaTemplate<String, OrderEvent>
+	private val kafkaTemplate: KafkaTemplate<String, OrderEvent>,
+	@Value("\${kafka.producer.topic}") val producerTopicName: String,
 ) {
 
 	@PostMapping("/orders")
@@ -34,7 +38,7 @@ class OrderController(
 				order = newCustomerOrder,
 				type = "ORDER_CREATED"
 			)
-			kafkaTemplate.send("new-orders", event)
+			kafkaTemplate.send(producerTopicName, event)
 		} catch (e: Exception) {
 			log.error(e.message)
 			order.status = "FAILED"

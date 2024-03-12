@@ -1,4 +1,4 @@
-package ru.nb.saga.payment
+package ru.nb.saga.payment.data
 
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue

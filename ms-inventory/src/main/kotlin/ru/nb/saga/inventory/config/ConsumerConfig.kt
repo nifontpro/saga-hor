@@ -36,7 +36,7 @@ class ConsumerConfig(
 			baseConsumerFactory(it, consumerFactory)
 		}
 
-	@Bean
+	@Bean("newConsumerTopic")
 	fun topic(): NewTopic {
 		return TopicBuilder.name(consumerTopicName).partitions(1).replicas(1).build()
 	}

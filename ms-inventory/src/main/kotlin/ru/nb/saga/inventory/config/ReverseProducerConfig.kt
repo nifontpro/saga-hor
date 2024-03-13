@@ -31,7 +31,7 @@ class ReverseProducerConfig(
 		producerFactory: ProducerFactory<String, PaymentEvent>
 	): KafkaTemplate<String, PaymentEvent> = KafkaTemplate(producerFactory)
 
-	@Bean
+	@Bean("newReverseProducerTopic")
 	fun topic(): NewTopic {
 		return TopicBuilder.name(producerReverseTopicName).partitions(1).replicas(1).build()
 	}

@@ -36,7 +36,7 @@ class ReverseConsumerConfig(
 			baseConsumerFactory(it, consumerFactory)
 		}
 
-	@Bean("new-consumer-topic")
+	@Bean("newReverseConsumerTopic")
 	fun topic(): NewTopic {
 		return TopicBuilder.name(consumerTopicName).partitions(1).replicas(1).build()
 	}

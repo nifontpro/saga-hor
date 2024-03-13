@@ -1,24 +1,24 @@
-package ru.nb.saga.payment.consumer
+package ru.nb.saga.inventory.consumer
 
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.stereotype.Service
 import ru.nb.saga.common.Log
-import ru.nb.saga.common.model.OrderEvent
-import ru.nb.saga.payment.controller.PaymentController
+import ru.nb.saga.common.model.PaymentEvent
+import ru.nb.saga.inventory.controller.InventoryController
 
 @Service
 class ConsumerKafka(
-	private val reverseOrder: PaymentController,
+	private val inventoryController: InventoryController
 ) {
 
 	@KafkaListener(
 		topics = ["\${kafka.consumer.topic}"],
 		containerFactory = "listenerContainerFactory",
 	)
-//	fun listen(@Payload values: List<OrderEvent>) {
-	fun listen(@Payload value: OrderEvent) {
-		reverseOrder.accept(value)
+//	fun listen(@Payload values: List<PaymentEvent>) {
+	fun listen(@Payload value: PaymentEvent) {
+		inventoryController.accept(value)
 	}
 
 	companion object : Log()

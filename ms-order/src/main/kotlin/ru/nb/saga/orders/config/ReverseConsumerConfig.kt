@@ -1,4 +1,4 @@
-package ru.nb.saga.inventory.config
+package ru.nb.saga.orders.config
 
 import org.apache.kafka.clients.admin.NewTopic
 import org.springframework.beans.factory.annotation.Value
@@ -10,10 +10,10 @@ import org.springframework.kafka.core.ConsumerFactory
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory
 import ru.nb.saga.common.kafka.baseConsumerFactory
 import ru.nb.saga.common.kafka.baseConsumerProps
-import ru.nb.saga.common.model.PaymentEvent
+import ru.nb.saga.common.model.OrderEvent
 
 @Configuration
-class ConsumerConfig(
+class ReverseConsumerConfig(
 	@Value("\${kafka.consumer.topic}") val consumerTopicName: String,
 	@Value("\${kafka.bootstrap-servers}") val bootstrapServers: String,
 	@Value("\${kafka.consumer.client-id}") val consumerClientId: String,
@@ -21,22 +21,22 @@ class ConsumerConfig(
 ) {
 
 	@Bean
-	fun consumerFactory(): ConsumerFactory<String, PaymentEvent> = DefaultKafkaConsumerFactory(
+	fun consumerFactory(): ConsumerFactory<String, OrderEvent> = DefaultKafkaConsumerFactory(
 		baseConsumerProps(
 			bootstrapServers = bootstrapServers,
 			consumerClientId = consumerClientId,
 			consumerGroupId = consumerGroupId,
-			packages = "ru.nb.saga.common.model.PaymentEvent:ru.nb.saga.common.model.PaymentEvent"
+			packages = "ru.nb.saga.common.model.OrderEvent:ru.nb.saga.common.model.OrderEvent"
 		)
 	)
 
-	@Bean("listenerContainerFactory")
-	fun listenerContainerFactory(consumerFactory: ConsumerFactory<String, PaymentEvent>) =
-		ConcurrentKafkaListenerContainerFactory<String, PaymentEvent>().also {
+	@Bean("reverseListenerFactory")
+	fun listenerContainerFactory(consumerFactory: ConsumerFactory<String, OrderEvent>) =
+		ConcurrentKafkaListenerContainerFactory<String, OrderEvent>().also {
 			baseConsumerFactory(it, consumerFactory)
 		}
 
-	@Bean
+	@Bean("new-consumer-topic")
 	fun topic(): NewTopic {
 		return TopicBuilder.name(consumerTopicName).partitions(1).replicas(1).build()
 	}

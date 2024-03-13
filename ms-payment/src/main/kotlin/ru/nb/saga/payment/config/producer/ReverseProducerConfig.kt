@@ -1,6 +1,7 @@
-package ru.nb.saga.orders.config
+package ru.nb.saga.payment.config.producer
 
 import org.apache.kafka.clients.admin.NewTopic
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -10,30 +11,29 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
 import ru.nb.saga.common.kafka.baseProducerProps
 import ru.nb.saga.common.model.OrderEvent
-import ru.nb.saga.common.model.PaymentEvent
 
 @Configuration
-class ProducerConfig(
-	@Value("\${kafka.producer.topic}") val producerTopicName: String,
+class ReverseProducerConfig(
+	@Value("\${kafka.producer.reverse.topic}") val producerReverseTopicName: String,
 	@Value("\${kafka.bootstrap-servers}") val bootstrapServers: String,
 	@Value("\${kafka.producer.client-id}") val producerClientId: String,
 ) {
 
-	@Bean
-	fun producerFactory(): ProducerFactory<String, PaymentEvent> = DefaultKafkaProducerFactory(
+	@Bean("reverseProducerFactory")
+	fun producerFactory(): ProducerFactory<String, OrderEvent> = DefaultKafkaProducerFactory(
 		baseProducerProps(
 			bootstrapServers = bootstrapServers,
-			producerClientId = producerClientId
+			producerClientId = "reverse-$producerClientId"
 		)
 	)
 
-	@Bean
-	fun kafkaTemplate(
-		producerFactory: ProducerFactory<String, OrderEvent>
+	@Bean("reverseKafkaProducer")
+	fun reverseKafkaTemplate(
+		@Qualifier("reverseProducerFactory") producerFactory: ProducerFactory<String, OrderEvent>
 	): KafkaTemplate<String, OrderEvent> = KafkaTemplate(producerFactory)
 
-	@Bean("newProducerTopic")
-	fun topic(): NewTopic {
-		return TopicBuilder.name(producerTopicName).partitions(1).replicas(1).build()
+	@Bean("newReverseProducerTopic")
+	fun reverseTopic(): NewTopic {
+		return TopicBuilder.name(producerReverseTopicName).partitions(1).replicas(1).build()
 	}
 }

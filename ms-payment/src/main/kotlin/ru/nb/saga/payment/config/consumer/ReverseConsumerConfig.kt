@@ -1,4 +1,4 @@
-package ru.nb.saga.inventory.config
+package ru.nb.saga.payment.config.consumer
 
 import org.apache.kafka.clients.admin.NewTopic
 import org.springframework.beans.factory.annotation.Value
@@ -13,14 +13,14 @@ import ru.nb.saga.common.kafka.baseConsumerProps
 import ru.nb.saga.common.model.PaymentEvent
 
 @Configuration
-class ConsumerConfig(
-	@Value("\${kafka.consumer.topic}") val consumerTopicName: String,
+class ReverseConsumerConfig(
 	@Value("\${kafka.bootstrap-servers}") val bootstrapServers: String,
 	@Value("\${kafka.consumer.client-id}") val consumerClientId: String,
 	@Value("\${kafka.consumer.group-id}") val consumerGroupId: String,
+	@Value("\${kafka.consumer.reverse.topic}") val consumerReversTopicName: String,
 ) {
 
-	@Bean
+	@Bean("reverseConsumerFactory")
 	fun consumerFactory(): ConsumerFactory<String, PaymentEvent> = DefaultKafkaConsumerFactory(
 		baseConsumerProps(
 			bootstrapServers = bootstrapServers,
@@ -30,15 +30,14 @@ class ConsumerConfig(
 		)
 	)
 
-	@Bean("listenerContainerFactory")
+	@Bean("reverseListenerFactory")
 	fun listenerContainerFactory(consumerFactory: ConsumerFactory<String, PaymentEvent>) =
 		ConcurrentKafkaListenerContainerFactory<String, PaymentEvent>().also {
 			baseConsumerFactory(it, consumerFactory)
 		}
 
-	@Bean
+	@Bean("newReverseConsumerTopic")
 	fun topic(): NewTopic {
-		return TopicBuilder.name(consumerTopicName).partitions(1).replicas(1).build()
+		return TopicBuilder.name(consumerReversTopicName).partitions(1).replicas(1).build()
 	}
-
 }

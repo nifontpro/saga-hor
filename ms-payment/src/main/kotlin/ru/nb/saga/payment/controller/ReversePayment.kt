@@ -3,10 +3,10 @@ package ru.nb.saga.payment.controller
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component
-import ru.nb.saga.common.BaseConsumer
+import ru.nb.saga.common.kafka.BaseConsumer
 import ru.nb.saga.common.Log
-import ru.nb.saga.common.OrderEvent
-import ru.nb.saga.common.PaymentEvent
+import ru.nb.saga.common.model.OrderEvent
+import ru.nb.saga.common.model.PaymentEvent
 import ru.nb.saga.payment.data.PaymentRepository
 
 @Component

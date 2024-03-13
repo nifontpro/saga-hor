@@ -31,7 +31,6 @@
             <option value="$PROJECT_DIR$/ms-inventory" />
             <option value="$PROJECT_DIR$/ms-order" />
             <option value="$PROJECT_DIR$/ms-payment" />
-            <option value="$PROJECT_DIR$/ms-shipment" />
           </set>
         </option>
       </GradleProjectSettings>

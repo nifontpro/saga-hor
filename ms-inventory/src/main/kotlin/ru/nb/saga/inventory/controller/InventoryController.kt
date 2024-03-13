@@ -5,8 +5,8 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import ru.nb.saga.common.BaseConsumer
-import ru.nb.saga.common.PaymentEvent
+import ru.nb.saga.common.kafka.BaseConsumer
+import ru.nb.saga.common.model.PaymentEvent
 import ru.nb.saga.inventory.data.Inventory
 import ru.nb.saga.inventory.data.InventoryRepository
 import ru.nb.saga.inventory.data.Stock

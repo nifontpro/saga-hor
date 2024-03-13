@@ -4,18 +4,18 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Controller
-import ru.nb.saga.common.BaseConsumer
+import ru.nb.saga.common.kafka.BaseConsumer
 import ru.nb.saga.common.Log
-import ru.nb.saga.common.OrderEvent
-import ru.nb.saga.common.PaymentEvent
+import ru.nb.saga.common.model.OrderEvent
+import ru.nb.saga.common.model.PaymentEvent
 import ru.nb.saga.payment.data.Payment
 import ru.nb.saga.payment.data.PaymentRepository
 
 @Controller
 class PaymentController(
 	private val repository: PaymentRepository,
-	@Qualifier("kafkaTemplate") private val kafkaTemplate: KafkaTemplate<String, PaymentEvent>,
-	@Qualifier("reverseKafkaTemplate") private val reverseKafkaTemplate: KafkaTemplate<String, OrderEvent>,
+	@Qualifier("kafkaProducer") private val kafkaProducer: KafkaTemplate<String, PaymentEvent>,
+	@Qualifier("reverseKafkaProducer") private val reverseKafkaProducer: KafkaTemplate<String, OrderEvent>,
 	@Value("\${kafka.producer.topic}") val producerTopicName: String,
 	@Value("\${kafka.producer.reverse.topic}") val producerReverseTopicName: String,
 ) : BaseConsumer<OrderEvent> {
@@ -44,7 +44,7 @@ class PaymentController(
 				order = value.order,
 				type = "PAYMENT_CREATED"
 			)
-			kafkaTemplate.send(producerTopicName, paymentEvent)
+			kafkaProducer.send(producerTopicName, paymentEvent)
 		} catch (e: Exception) {
 			log.error(e.message)
 			payment.orderId = order.orderId
@@ -56,7 +56,7 @@ class PaymentController(
 				order = order,
 				type = "ORDER_REVERSED"
 			)
-			reverseKafkaTemplate.send(producerReverseTopicName, oe)
+			reverseKafkaProducer.send(producerReverseTopicName, oe)
 		}
 	}
 

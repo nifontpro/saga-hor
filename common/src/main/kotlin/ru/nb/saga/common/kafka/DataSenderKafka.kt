@@ -1,7 +1,8 @@
-package ru.nb.saga.common
+package ru.nb.saga.common.kafka
 
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.support.SendResult
+import ru.nb.saga.common.Log
 
 interface DataSender<T> {
 	fun send(value: T)

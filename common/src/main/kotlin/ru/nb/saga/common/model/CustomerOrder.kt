@@ -1,4 +1,4 @@
-package ru.nb.saga.common
+package ru.nb.saga.common.model
 
 data class CustomerOrder(
 	val orderId: Long = 0,

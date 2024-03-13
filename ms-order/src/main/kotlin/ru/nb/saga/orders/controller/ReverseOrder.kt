@@ -2,9 +2,9 @@ package ru.nb.saga.orders.controller
 
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
-import ru.nb.saga.common.BaseConsumer
+import ru.nb.saga.common.kafka.BaseConsumer
 import ru.nb.saga.common.Log
-import ru.nb.saga.common.OrderEvent
+import ru.nb.saga.common.model.OrderEvent
 import ru.nb.saga.orders.data.OrderRepository
 
 @Component

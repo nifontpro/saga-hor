@@ -5,9 +5,9 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import ru.nb.saga.common.CustomerOrder
+import ru.nb.saga.common.model.CustomerOrder
 import ru.nb.saga.common.Log
-import ru.nb.saga.common.OrderEvent
+import ru.nb.saga.common.model.OrderEvent
 import ru.nb.saga.orders.data.OrderEntity
 import ru.nb.saga.orders.data.OrderRepository
 

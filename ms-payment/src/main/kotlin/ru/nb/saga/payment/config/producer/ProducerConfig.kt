@@ -1,4 +1,4 @@
-package ru.nb.saga.payment.config
+package ru.nb.saga.payment.config.producer
 
 import org.apache.kafka.clients.admin.NewTopic
 import org.springframework.beans.factory.annotation.Qualifier
@@ -9,8 +9,8 @@ import org.springframework.kafka.config.TopicBuilder
 import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
-import ru.nb.saga.common.OrderEvent
-import ru.nb.saga.common.PaymentEvent
+import ru.nb.saga.common.kafka.baseProducerProps
+import ru.nb.saga.common.model.PaymentEvent
 
 @Configuration
 class ProducerConfig(
@@ -19,24 +19,20 @@ class ProducerConfig(
 	@Value("\${kafka.producer.client-id}") val producerClientId: String,
 ) {
 
-	@Bean("producer-factory")
-	fun producerFactory(): ProducerFactory<String, PaymentEvent> {
-		return DefaultKafkaProducerFactory(
-			baseProducerProps(
-				bootstrapServers = bootstrapServers,
-				producerClientId = producerClientId
-			)
+	@Bean("producerFactory")
+	fun producerFactory(): ProducerFactory<String, PaymentEvent> = DefaultKafkaProducerFactory(
+		baseProducerProps(
+			bootstrapServers = bootstrapServers,
+			producerClientId = producerClientId
 		)
-	}
+	)
 
-	@Bean("kafkaTemplate")
+	@Bean("kafkaProducer")
 	fun kafkaTemplate(
-		@Qualifier("producer-factory") producerFactory: ProducerFactory<String, PaymentEvent>
-	): KafkaTemplate<String, PaymentEvent> {
-		return KafkaTemplate(producerFactory)
-	}
+		@Qualifier("producerFactory") producerFactory: ProducerFactory<String, PaymentEvent>
+	): KafkaTemplate<String, PaymentEvent> = KafkaTemplate(producerFactory)
 
-	@Bean("new-producer-topic")
+	@Bean("newProducerTopic")
 	fun topic(): NewTopic {
 		return TopicBuilder.name(producerTopicName).partitions(1).replicas(1).build()
 	}

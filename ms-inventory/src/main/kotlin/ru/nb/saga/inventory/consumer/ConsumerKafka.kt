@@ -16,9 +16,10 @@ class ConsumerKafka(
 		topics = ["\${kafka.consumer.topic}"],
 		containerFactory = "listenerContainerFactory",
 	)
-//	fun listen(@Payload values: List<PaymentEvent>) {
-	fun listen(@Payload value: PaymentEvent) {
-		inventoryController.accept(value)
+	fun listen(@Payload values: List<PaymentEvent>) {
+		values.forEach { value ->
+			inventoryController.accept(value)
+		}
 	}
 
 	companion object : Log()

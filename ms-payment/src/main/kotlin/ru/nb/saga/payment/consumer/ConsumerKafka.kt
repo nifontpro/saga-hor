@@ -9,16 +9,17 @@ import ru.nb.saga.payment.controller.PaymentController
 
 @Service
 class ConsumerKafka(
-	private val reverseOrder: PaymentController,
+	private val paymentController: PaymentController,
 ) {
 
 	@KafkaListener(
 		topics = ["\${kafka.consumer.topic}"],
 		containerFactory = "listenerContainerFactory",
 	)
-//	fun listen(@Payload values: List<OrderEvent>) {
-	fun listen(@Payload value: OrderEvent) {
-		reverseOrder.accept(value)
+	fun listen(@Payload values: List<OrderEvent>) {
+		values.forEach { value ->
+			paymentController.accept(value)
+		}
 	}
 
 	companion object : Log()

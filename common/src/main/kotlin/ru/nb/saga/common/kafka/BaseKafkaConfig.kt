@@ -39,12 +39,12 @@ fun baseConsumerProps(
 	props[ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG] = JsonDeserializer::class.java
 	props[JsonDeserializer.TYPE_MAPPINGS] = packages
 
-	/*	// Размер пакета сообщений, прочитанного за раз
+		// Размер пакета сообщений, прочитанного за раз
 		props[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 3
 
 		// Максимальный интервал между двумя операциями чтения,
 		// Если проходит больше этого времени, то считается, что consumer мертв
-		props[ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG] = 3000*/
+		props[ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG] = 3000
 	return props
 }
 
@@ -54,7 +54,7 @@ fun <T> baseConsumerFactory(
 	taskName: String = "consumer-"
 ) {
 	containerFactory.consumerFactory = consumerFactory
-	containerFactory.isBatchListener = false
+	containerFactory.isBatchListener = true
 	containerFactory.setConcurrency(1)
 	containerFactory.containerProperties.idleBetweenPolls = 1000
 

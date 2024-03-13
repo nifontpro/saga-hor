@@ -16,9 +16,10 @@ class ReverseConsumerKafka(
 		topics = ["\${kafka.consumer.reverse.topic}"],
 		containerFactory = "reverseListenerFactory",
 	)
-//	fun listen(@Payload values: List<OrderEvent>) {
-	fun listen(@Payload value: PaymentEvent) {
-		reversePayment.accept(value)
+	fun listen(@Payload values: List<PaymentEvent>) {
+		values.forEach { value ->
+			reversePayment.accept(value)
+		}
 	}
 
 	companion object : Log()

@@ -1,11 +1,9 @@
 package ru.nb.saga.payment.controller
 
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Controller
-import ru.nb.saga.common.kafka.BaseConsumer
 import ru.nb.saga.common.Log
+import ru.nb.saga.common.kafka.BaseConsumer
+import ru.nb.saga.common.kafka.DataSender
 import ru.nb.saga.common.model.OrderEvent
 import ru.nb.saga.common.model.PaymentEvent
 import ru.nb.saga.payment.data.Payment
@@ -14,10 +12,8 @@ import ru.nb.saga.payment.data.PaymentRepository
 @Controller
 class PaymentController(
 	private val repository: PaymentRepository,
-	@Qualifier("kafkaProducer") private val kafkaProducer: KafkaTemplate<String, PaymentEvent>,
-	@Qualifier("reverseKafkaProducer") private val reverseKafkaProducer: KafkaTemplate<String, OrderEvent>,
-	@Value("\${kafka.producer.topic}") val producerTopicName: String,
-	@Value("\${kafka.producer.reverse.topic}") val producerReverseTopicName: String,
+	private val dataSender: DataSender<PaymentEvent>,
+	private val reverseDataSender: DataSender<OrderEvent>,
 ) : BaseConsumer<OrderEvent> {
 
 	override fun accept(value: OrderEvent) {
@@ -44,7 +40,7 @@ class PaymentController(
 				order = value.order,
 				type = "PAYMENT_CREATED"
 			)
-			kafkaProducer.send(producerTopicName, paymentEvent)
+			dataSender.send(paymentEvent)
 		} catch (e: Exception) {
 			log.error(e.message)
 			payment.orderId = order.orderId
@@ -56,7 +52,7 @@ class PaymentController(
 				order = order,
 				type = "ORDER_REVERSED"
 			)
-			reverseKafkaProducer.send(producerReverseTopicName, oe)
+			reverseDataSender.send(oe)
 		}
 	}
 

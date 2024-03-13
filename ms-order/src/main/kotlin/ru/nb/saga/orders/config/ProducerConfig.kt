@@ -8,9 +8,11 @@ import org.springframework.kafka.config.TopicBuilder
 import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
+import ru.nb.saga.common.Log
+import ru.nb.saga.common.kafka.DataSender
+import ru.nb.saga.common.kafka.DataSenderKafka
 import ru.nb.saga.common.kafka.baseProducerProps
 import ru.nb.saga.common.model.OrderEvent
-import ru.nb.saga.common.model.PaymentEvent
 
 @Configuration
 class ProducerConfig(
@@ -20,7 +22,7 @@ class ProducerConfig(
 ) {
 
 	@Bean
-	fun producerFactory(): ProducerFactory<String, PaymentEvent> = DefaultKafkaProducerFactory(
+	fun producerFactory(): ProducerFactory<String, OrderEvent> = DefaultKafkaProducerFactory(
 		baseProducerProps(
 			bootstrapServers = bootstrapServers,
 			producerClientId = producerClientId
@@ -32,8 +34,19 @@ class ProducerConfig(
 		producerFactory: ProducerFactory<String, OrderEvent>
 	): KafkaTemplate<String, OrderEvent> = KafkaTemplate(producerFactory)
 
+
+	@Bean
+	fun dataSender(kafkaTemplate: KafkaTemplate<String, OrderEvent>): DataSender<OrderEvent> {
+		return DataSenderKafka(
+			topic = producerTopicName,
+			template = kafkaTemplate
+		) { log.info("After send: {}", it) }
+	}
+
 	@Bean("newProducerTopic")
 	fun topic(): NewTopic {
 		return TopicBuilder.name(producerTopicName).partitions(1).replicas(1).build()
 	}
+
+	companion object : Log()
 }

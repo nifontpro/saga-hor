@@ -1,10 +1,9 @@
 package ru.nb.saga.payment.controller
 
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component
-import ru.nb.saga.common.kafka.BaseConsumer
 import ru.nb.saga.common.Log
+import ru.nb.saga.common.kafka.BaseConsumer
+import ru.nb.saga.common.kafka.DataSender
 import ru.nb.saga.common.model.OrderEvent
 import ru.nb.saga.common.model.PaymentEvent
 import ru.nb.saga.payment.data.PaymentRepository
@@ -12,8 +11,7 @@ import ru.nb.saga.payment.data.PaymentRepository
 @Component
 class ReversePayment(
 	private val repository: PaymentRepository,
-	private val kafkaTemplate: KafkaTemplate<String, OrderEvent>,
-	@Value("\${kafka.producer.reverse.topic}") val producerReverseTopicName: String,
+	private val reverseDataSender: DataSender<OrderEvent>,
 ) : BaseConsumer<PaymentEvent> {
 
 	override fun accept(value: PaymentEvent) {
@@ -34,7 +32,7 @@ class ReversePayment(
 				order = order,
 				type = "ORDER_REVERSED"
 			)
-			kafkaTemplate.send(producerReverseTopicName, orderEvent)
+			reverseDataSender.send(orderEvent)
 		} catch (e: Exception) {
 			log.error(e.message)
 		}

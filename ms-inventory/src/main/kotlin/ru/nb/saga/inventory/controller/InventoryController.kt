@@ -1,11 +1,10 @@
 package ru.nb.saga.inventory.controller
 
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import ru.nb.saga.common.kafka.BaseConsumer
+import ru.nb.saga.common.kafka.DataSender
 import ru.nb.saga.common.model.PaymentEvent
 import ru.nb.saga.inventory.data.Inventory
 import ru.nb.saga.inventory.data.InventoryRepository
@@ -14,8 +13,7 @@ import ru.nb.saga.inventory.data.Stock
 @RestController
 class InventoryController(
 	private val repository: InventoryRepository,
-	private val kafkaPaymentTemplate: KafkaTemplate<String, PaymentEvent>,
-	@Value("\${kafka.producer.reverse.topic}") val producerReverseTopicName: String,
+	private val reverseDataSender: DataSender<PaymentEvent>,
 ) : BaseConsumer<PaymentEvent> {
 
 	override fun accept(value: PaymentEvent) {
@@ -33,11 +31,11 @@ class InventoryController(
 		} catch (e: Exception) {
 			// reverse previous task
 
-			val pe = PaymentEvent(
+			val paymentEvent = PaymentEvent(
 				order = order,
 				type = "PAYMENT_REVERSED"
 			)
-			kafkaPaymentTemplate.send(producerReverseTopicName, pe)
+			reverseDataSender.send(paymentEvent)
 		}
 	}
 

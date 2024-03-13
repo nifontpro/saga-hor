@@ -11,7 +11,7 @@ interface DataSender<T> {
 class DataSenderKafka<T>(
 	private val topic: String,
 	private val template: KafkaTemplate<String, T>,
-	private val sendAsk: (T) -> Unit
+	private val onComplete: (T) -> Unit = {}
 ) : DataSender<T> {
 
 	override fun send(value: T) {
@@ -26,17 +26,17 @@ class DataSenderKafka<T>(
 				.whenComplete { result: SendResult<String, T>, ex: Throwable? ->
 					if (ex == null) {
 						log.info(
-							"message {} was sent, offset:{}",
+							"Message: {} was sent, offset:{}",
 							value,
 							result.recordMetadata.offset()
 						)
-						sendAsk(value)
+						onComplete(value)
 					} else {
-						log.error("message {} was not sent", value, ex)
+						log.error("Message: {} was not sent", value, ex)
 					}
 				}
 		} catch (ex: Exception) {
-			log.error("send error, value:{}", value, ex)
+			log.error("Send error, value:{}", value, ex)
 		}
 	}
 
